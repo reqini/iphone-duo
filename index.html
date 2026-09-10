@@ -1,0 +1,799 @@
+<title>Recchini Teardown Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============ TOKENS ============
+     Deliberate single-theme (dark) design: this page extends the identity of
+     reqini.github.io/lucianorecchini-portfolio, which is dark-only by brand
+     choice. Colors are painted explicitly so the page holds on either host
+     ground, matching that existing site rather than inventing an unbranded
+     light mode. */
+  :root{
+    --bg:        #0a0a0b;
+    --bg-2:      #131317;
+    --surface:   #18181c;
+    --surface-2: #1e1e24;
+    --line:      rgba(255,255,255,.09);
+    --line-2:    rgba(255,255,255,.15);
+    --text:      #f2efe9;
+    --text-muted:#948f98;
+    --text-faint:#59555e;
+    --lime:      #c8f55a;
+    --lime-dim:  rgba(200,245,90,.14);
+    --blue:      #6b9fff;
+    --blue-dim:  rgba(107,159,255,.14);
+    --warn:      #ff6a4d;
+    --warn-dim:  rgba(255,106,77,.14);
+
+    --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+    --font-body:    'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --wrap: 760px;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; }
+  ::selection{ background:var(--lime); color:#0a0a0b; }
+
+  .container{ max-width:var(--wrap); margin:0 auto; padding:0 24px; }
+
+  /* ============ REPORT BAR ============ */
+  .report-bar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px;
+    background:rgba(10,10,11,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    font-family:var(--font-mono);
+    font-size:.72rem;
+    letter-spacing:.04em;
+    color:var(--text-muted);
+  }
+  .report-bar b{ color:var(--text); font-weight:500; }
+  .report-bar .live{ display:flex; align-items:center; gap:8px; color:var(--text-muted); }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--warn); box-shadow:0 0 0 3px var(--warn-dim); }
+  @media (prefers-reduced-motion:no-preference){
+    .dot{ animation:pulse 1.8s ease-in-out infinite; }
+  }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  /* ============ EYEBROW / LABELS ============ */
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:.72rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:16px; height:1px; background:currentColor; opacity:.5; }
+  .eyebrow.warn{ color:var(--warn); }
+  .eyebrow.lime{ color:var(--lime); }
+
+  h1,h2,h3{ font-family:var(--font-display); font-weight:700; text-wrap:balance; letter-spacing:-.01em; }
+
+  /* ============ STAGE (scroll-linked hero) ============ */
+  .stage{ position:relative; height:260vh; }
+  .stage-sticky{
+    position:sticky; top:0; height:100vh; min-height:560px;
+    overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding:88px 20px 40px;
+  }
+  .stage-sticky::before{
+    content:'';
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 18%, var(--blue-dim), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 88%, var(--lime-dim), transparent 60%);
+    pointer-events:none;
+  }
+
+  .act{ position:relative; max-width:560px; margin:0 auto; }
+  .act1{
+    opacity:var(--act1,1);
+    transform:translateY(calc((1 - var(--act1,1)) * -18px));
+  }
+  .act1 h1{ font-size:clamp(1.7rem,4.6vw,2.7rem); margin:14px 0 12px; }
+  .act1 p.sub{ color:var(--text-muted); font-size:.98rem; max-width:460px; margin:0 auto; }
+
+  .defect-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    margin-top:18px;
+    padding:7px 14px;
+    border:1px solid rgba(255,106,77,.35);
+    background:var(--warn-dim);
+    color:var(--warn);
+    border-radius:999px;
+    font-family:var(--font-mono); font-size:.72rem; letter-spacing:.06em;
+  }
+  .defect-badge svg{ width:13px; height:13px; flex:none; }
+
+  .spec-ticker{
+    margin-top:22px;
+    font-family:var(--font-mono);
+    font-size:.68rem;
+    letter-spacing:.05em;
+    color:var(--text-faint);
+    display:flex; flex-wrap:wrap; gap:0 14px; justify-content:center;
+    max-width:460px;
+  }
+  .spec-ticker span:not(:last-child)::after{ content:'·'; margin-left:14px; color:var(--line-2); }
+
+  /* --- phone scene --- */
+  .phone-scene{
+    position:relative;
+    width:clamp(150px,32vw,196px);
+    height:clamp(300px,64vw,392px);
+    margin:30px auto 6px;
+    perspective:1300px;
+  }
+  .phone-tilt{
+    position:absolute; inset:0;
+    transform-style:preserve-3d;
+    transform:rotateX(calc(8deg + var(--tilt-y,0deg))) rotateY(calc(-16deg + var(--tilt-x,0deg)));
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  }
+  .phone{
+    position:absolute; inset:0; transform-style:preserve-3d;
+    transform:translate(var(--shakeX,0px), var(--shakeY,0px));
+  }
+  .phone-half{
+    position:absolute; top:0; width:50%; height:100%; z-index:1;
+    background:
+      linear-gradient(155deg, rgba(255,255,255,.12), rgba(255,255,255,0) 16%),
+      linear-gradient(160deg,#2b2a31,#0d0d10 62%);
+    border:1px solid var(--line-2);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.14),
+      inset 0 -1px 0 rgba(0,0,0,.55),
+      0 30px 60px -20px rgba(0,0,0,.7);
+    overflow:visible;
+  }
+  .phone-half::before,.phone-half::after{ overflow:hidden; }
+  .side-btn{
+    position:absolute;
+    background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(18,18,22,.95) 45%);
+    border-radius:3px;
+    box-shadow:0 1px 2px rgba(0,0,0,.5);
+    z-index:2;
+  }
+  .phone-half.left .side-btn{ left:-2.5px; width:2.5px; }
+  .phone-half.right .side-btn{ right:-2.5px; width:2.5px; }
+  .btn-action{ top:16%; height:20px; }
+  .btn-vol1{ top:23%; height:28px; }
+  .btn-vol2{ top:32%; height:28px; }
+  .btn-power{ top:21%; height:36px; }
+  .btn-camctrl{ top:32%; height:17px; }
+  .phone-half.left{
+    left:0; border-radius:22px 0 0 22px; border-right:none;
+    transform:translateX(calc(var(--split,0) * -34px)) translateY(calc(var(--split,0) * 10px)) rotateY(calc(var(--split,0) * -24deg));
+    transform-origin:right center;
+  }
+  .phone-half.right{
+    right:0; border-radius:0 22px 22px 0; border-left:none;
+    transform:translateX(calc(var(--split,0) * 34px)) translateY(calc(var(--split,0) * 10px)) rotateY(calc(var(--split,0) * 24deg));
+    transform-origin:left center;
+  }
+  .phone-half::before{ /* screen glow */
+    content:''; position:absolute; inset:7px;
+    border-radius:16px;
+    background:
+      radial-gradient(120% 70% at 50% 0%, rgba(200,245,90,.16), transparent 60%),
+      radial-gradient(120% 70% at 50% 100%, rgba(107,159,255,.14), transparent 60%),
+      #08080a;
+  }
+  .phone-half.left::after,.phone-half.right::after{ /* faint scanlines for a "screen" read */
+    content:''; position:absolute; inset:7px; border-radius:16px;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+  .dynamic-island{
+    position:absolute; top:15px; left:50%; transform:translateX(-50%);
+    width:32%; height:9px; border-radius:7px;
+    background:#050506; border:1px solid rgba(255,255,255,.08);
+    z-index:3;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .cam-dot{
+    width:3.5px; height:3.5px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #4a5a2f, #0a0a0b 70%);
+    box-shadow:0 0 0 1px rgba(255,255,255,.05);
+  }
+  .crack-beam{
+    position:absolute; left:50%; top:8%; bottom:8%; width:3px; transform:translateX(-50%);
+    background:linear-gradient(180deg, transparent, var(--lime) 20%, #fff 50%, var(--lime) 80%, transparent);
+    opacity:var(--split,0);
+    filter:blur(.3px);
+    box-shadow:0 0 18px 3px rgba(200,245,90,.55);
+    z-index:4;
+  }
+  .shatter{
+    position:absolute; inset:7px; z-index:6;
+    opacity:var(--shatterOpacity, .6);
+    filter:drop-shadow(0 0 6px rgba(200,245,90,.25));
+  }
+  .impact-glow{ opacity:var(--flash,0); }
+  .impact-flash{
+    position:absolute; inset:7px; z-index:8; border-radius:16px;
+    background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.9), transparent 62%);
+    opacity:var(--flash,0);
+    mix-blend-mode:screen;
+    pointer-events:none;
+  }
+  .shards{ position:absolute; inset:0; z-index:9; pointer-events:none; }
+  .shard{
+    position:absolute; width:var(--sw); height:var(--sh);
+    background:linear-gradient(135deg, rgba(242,239,233,.92), rgba(200,245,90,.45) 55%, rgba(107,159,255,.35));
+    clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+    opacity:calc(.82 - var(--split,0) * .78);
+    transform:
+      translate(
+        calc(var(--sx) * (.35 + var(--split,0) * 2)),
+        calc(var(--sy) * (.35 + var(--split,0) * 2) + var(--split,0) * var(--split,0) * 46px)
+      )
+      rotate(calc(var(--sr) + var(--split,0) * var(--sr2)))
+      scale(calc(1 - var(--split,0) * .25));
+    filter:drop-shadow(0 3px 8px rgba(0,0,0,.4)) blur(calc(var(--split,0) * 1px));
+  }
+
+  .scroll-cue{
+    margin-top:22px;
+    opacity:var(--cue,1);
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    font-family:var(--font-mono); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .scroll-cue .chev{ width:12px; height:12px; border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor; transform:rotate(45deg); }
+  @media (prefers-reduced-motion:no-preference){
+    .scroll-cue .chev{ animation:bob 1.6s ease-in-out infinite; }
+  }
+  @keyframes bob{ 0%,100%{ transform:rotate(45deg) translateY(0);} 50%{ transform:rotate(45deg) translateY(4px);} }
+
+  .act2{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:0 22px;
+    opacity:var(--reveal,0);
+    transform:translateY(calc((1 - var(--reveal,0)) * 26px));
+    pointer-events:none;
+  }
+  .act2 h2{ font-size:clamp(1.5rem,4.2vw,2.3rem); margin:12px 0 10px; }
+  .act2 p{ color:var(--text-muted); max-width:460px; font-size:.96rem; }
+  .status-pill{
+    margin-top:16px;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 14px; border-radius:999px;
+    background:var(--lime-dim); border:1px solid rgba(200,245,90,.35); color:var(--lime);
+    font-family:var(--font-mono); font-size:.7rem; letter-spacing:.06em;
+  }
+  .status-pill .dot2{ width:6px; height:6px; border-radius:50%; background:var(--lime); }
+  .next-cue{ margin-top:20px; font-family:var(--font-mono); font-size:.68rem; letter-spacing:.1em; color:var(--text-faint); }
+
+  /* ============ DOCUMENT SECTIONS ============ */
+  main{ position:relative; background:var(--bg); }
+  section{ padding:72px 0; }
+  section + section{ border-top:1px solid var(--line); }
+
+  .sec-head{ margin-bottom:36px; }
+  .sec-head .eyebrow{ margin-bottom:10px; }
+  .sec-head h2{ font-size:clamp(1.4rem,3.4vw,1.9rem); }
+
+  /* --- 01 spec sheet --- */
+  .spec-sheet{
+    border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    background:var(--surface);
+  }
+  .spec-row{
+    display:grid; grid-template-columns:180px 1fr; gap:16px;
+    padding:14px 20px;
+  }
+  .spec-row + .spec-row{ border-top:1px solid var(--line); }
+  .spec-row dt{
+    font-family:var(--font-mono); font-size:.72rem; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .spec-row dd{ font-size:.96rem; }
+  .avatar-mark{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+  .avatar-mark svg{ width:52px; height:52px; flex:none; }
+  .avatar-mark .name{ font-family:var(--font-display); font-size:1.3rem; font-weight:700; }
+  .avatar-mark .role{ color:var(--text-muted); font-size:.88rem; }
+
+  /* --- 02 components (experience) --- */
+  .component{
+    display:grid; grid-template-columns:44px 1fr; gap:18px;
+    padding:26px 0;
+  }
+  .component + .component{ border-top:1px solid var(--line); }
+  .component .num{
+    font-family:var(--font-mono); font-size:.8rem; color:var(--text-faint);
+    display:flex; align-items:flex-start; padding-top:3px;
+  }
+  .component .num span{
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--line-2);
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .component h3{ font-size:1.05rem; font-weight:600; font-family:var(--font-body); }
+  .component .meta{ font-family:var(--font-mono); font-size:.72rem; color:var(--blue); letter-spacing:.03em; margin-top:2px; }
+  .component p{ color:var(--text-muted); font-size:.92rem; margin-top:8px; max-width:56ch; }
+  .tags{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+  .tag{
+    font-family:var(--font-mono); font-size:.68rem; letter-spacing:.03em;
+    padding:4px 9px; border-radius:6px; border:1px solid var(--line-2); color:var(--text-muted);
+  }
+
+  .timeline{ position:relative; }
+  .timeline::before{
+    content:''; position:absolute; left:21px; top:8px; bottom:8px; width:1px;
+    background:linear-gradient(var(--line-2), var(--line-2) 92%, transparent);
+  }
+  .timeline .component .num span{ background:var(--bg); position:relative; z-index:1; }
+  .timeline .component:first-child{ padding-top:0; }
+
+  .subentries{
+    margin-top:16px; padding:14px 0 4px 18px;
+    border-left:2px solid var(--line-2);
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .slabel{
+    font-family:var(--font-mono); font-size:.66rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--text-faint); margin-bottom:2px;
+  }
+  .subentry .shd{ display:flex; flex-wrap:wrap; align-items:baseline; gap:7px 10px; }
+  .subentry .srole{ font-weight:600; font-size:.92rem; }
+  .subentry .scompany{ font-family:var(--font-mono); font-size:.76rem; color:var(--lime); }
+  .subentry .sdate{ font-family:var(--font-mono); font-size:.68rem; color:var(--text-faint); margin-left:auto; }
+  .subentry p{ color:var(--text-muted); font-size:.86rem; margin-top:5px; max-width:56ch; }
+  .see-more{ margin-top:16px; font-size:.82rem; color:var(--text-faint); }
+  .see-more a{ color:var(--blue); text-decoration:underline; text-underline-offset:2px; }
+
+  /* --- 03 modules grid --- */
+  .modules{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+  .module{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .module .mtitle{ font-weight:600; font-size:.96rem; }
+  .module .mtitle .fw{ font-family:var(--font-mono); font-size:.66rem; color:var(--lime); display:block; letter-spacing:.06em; margin-bottom:4px; }
+  .module p{ color:var(--text-muted); font-size:.85rem; }
+  .module .tags{ margin-top:auto; }
+
+  /* --- 04 compatibility (skills) --- */
+  .compat{ display:grid; gap:26px; }
+  .compat-group .glabel{ font-family:var(--font-mono); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--blue); margin-bottom:12px; display:block; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    font-size:.84rem; padding:6px 12px; border-radius:8px;
+    background:var(--surface-2); border:1px solid var(--line);
+  }
+
+  /* --- 05 warranty / contact --- */
+  .warranty{
+    background:linear-gradient(165deg,var(--surface),var(--bg-2));
+    border:1px solid var(--line); border-radius:18px; padding:40px 32px;
+    text-align:center;
+  }
+  .warranty h2{ font-size:clamp(1.5rem,3.6vw,2.1rem); margin-bottom:12px; }
+  .warranty p{ color:var(--text-muted); max-width:52ch; margin:0 auto 26px; }
+  .cta-row{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+  .btn{
+    font-family:var(--font-mono); font-size:.82rem; letter-spacing:.02em;
+    padding:12px 20px; border-radius:10px; border:1px solid var(--line-2);
+    display:inline-flex; align-items:center; gap:8px;
+    transition:border-color .2s ease, transform .2s ease, background .2s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn.primary{ background:var(--lime); color:#0a0a0b; border-color:var(--lime); font-weight:500; }
+  .btn.primary:hover{ background:#d8ff7c; }
+  .btn.ghost{ color:var(--text); }
+  .btn.ghost:hover{ border-color:var(--line-2); background:var(--surface-2); }
+
+  footer{ padding:34px 0 54px; text-align:center; }
+  footer p{ font-family:var(--font-mono); font-size:.7rem; color:var(--text-faint); letter-spacing:.02em; }
+  footer p + p{ margin-top:6px; }
+
+  @media (max-width:560px){
+    .spec-row{ grid-template-columns:1fr; gap:4px; }
+    .component{ grid-template-columns:34px 1fr; gap:12px; }
+    .timeline::before{ left:16px; }
+    .subentry .sdate{ margin-left:0; }
+  }
+</style>
+
+<div class="report-bar">
+  <span><b>REPORTE DE DESMONTAJE</b> · TD‑2026‑0910</span>
+  <span class="live"><span class="dot"></span>EN VIVO · 10 SEP 2026</span>
+</div>
+
+<section class="stage" id="stage">
+  <div class="stage-sticky" id="stageSticky">
+
+    <div class="act act1" id="act1">
+      <span class="eyebrow warn">Filtración no oficial · Teardown</span>
+      <h1>El iPhone Due tiene una falla que Apple no mencionó.</h1>
+      <p class="sub">No es plegable — es una sola pieza de titanio, sin bisagras. Y aun así, las primeras unidades que llegaron a talleres de reparación muestran el mismo patrón: el chasis cede bajo uso normal y el equipo termina partiéndose exactamente al medio.</p>
+      <span class="defect-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5M12 17h.01"/></svg>
+        FALLA CRÍTICA · CHASIS CENTRAL
+      </span>
+      <div class="spec-ticker">
+        <span>PANTALLA 6.9"</span><span>CHASIS DE TITANIO GRADO 5</span><span>SIN BISAGRAS</span><span>IP68</span><span>PUNTO DE FALLA: CENTRO EXACTO</span>
+      </div>
+    </div>
+
+    <div class="phone-scene" id="phoneScene" aria-hidden="true">
+      <div class="phone-tilt" id="phoneTilt">
+        <div class="phone">
+          <div class="phone-half left">
+            <span class="side-btn btn-action"></span>
+            <span class="side-btn btn-vol1"></span>
+            <span class="side-btn btn-vol2"></span>
+          </div>
+          <div class="phone-half right">
+            <span class="side-btn btn-power"></span>
+            <span class="side-btn btn-camctrl"></span>
+          </div>
+          <div class="dynamic-island"><span class="cam-dot"></span><span class="cam-dot"></span></div>
+          <div class="crack-beam"></div>
+          <svg class="shatter" viewBox="0 0 300 620" preserveAspectRatio="none">
+            <defs>
+              <radialGradient id="impactGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+                <stop offset="45%" stop-color="#c8f55a" stop-opacity=".55"/>
+                <stop offset="100%" stop-color="#c8f55a" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle class="impact-glow" cx="150" cy="300" r="52" fill="url(#impactGrad)"/>
+            <g class="crack-web" fill="none" stroke="rgba(240,239,233,.55)" stroke-width="1.1">
+              <path d="M150,300 L146,240 L152,190 L144,120 L150,40 L147,-4"/>
+              <path d="M150,300 L190,260 L210,210 L245,150 L270,90 L296,26"/>
+              <path d="M150,300 L210,290 L250,296 L300,292"/>
+              <path d="M150,300 L195,340 L230,380 L260,440 L290,500 L302,560"/>
+              <path d="M150,300 L156,360 L150,420 L158,500 L152,580 L155,624"/>
+              <path d="M150,300 L110,345 L80,390 L45,450 L15,510 L-4,566"/>
+              <path d="M150,300 L95,308 L55,300 L-2,306"/>
+              <path d="M150,300 L112,255 L85,210 L50,160 L20,100 L-6,44"/>
+              <path d="M146,240 L190,260" stroke-width=".8"/>
+              <path d="M210,290 L195,340" stroke-width=".8"/>
+              <path d="M110,345 L95,308" stroke-width=".8"/>
+              <path d="M85,210 L112,255" stroke-width=".8"/>
+              <path d="M170,220 L202,235" stroke-width=".7"/>
+              <path d="M225,340 L255,365" stroke-width=".7"/>
+              <path d="M120,370 L95,392" stroke-width=".7"/>
+            </g>
+            <g class="crack-core" stroke="var(--lime)" stroke-width="1.5" opacity=".85">
+              <path d="M150,300 L160,283"/>
+              <path d="M150,300 L138,289"/>
+              <path d="M150,300 L165,313"/>
+              <path d="M150,300 L133,317"/>
+              <path d="M150,300 L152,278"/>
+              <path d="M150,300 L172,300"/>
+              <path d="M150,300 L145,322"/>
+              <path d="M150,300 L128,300"/>
+            </g>
+            <g class="crack-glints" fill="rgba(240,239,233,.5)">
+              <polygon points="150,300 172,300 163,282"/>
+              <polygon points="150,300 138,289 128,305"/>
+              <polygon points="150,300 165,313 158,332"/>
+              <polygon points="150,300 128,300 138,318"/>
+            </g>
+          </svg>
+          <div class="impact-flash"></div>
+        </div>
+        <div class="shards" aria-hidden="true">
+          <span class="shard" style="--sw:22px;--sh:28px;--sx:-48px;--sy:-56px;--sr:-18deg;--sr2:-50deg;top:12%;left:4%"></span>
+          <span class="shard" style="--sw:13px;--sh:17px;--sx:54px;--sy:-42px;--sr:26deg;--sr2:64deg;top:6%;right:3%"></span>
+          <span class="shard" style="--sw:10px;--sh:13px;--sx:8px;--sy:-64px;--sr:6deg;--sr2:30deg;top:2%;left:44%"></span>
+          <span class="shard" style="--sw:17px;--sh:23px;--sx:-60px;--sy:32px;--sr:10deg;--sr2:-40deg;top:44%;left:-3%"></span>
+          <span class="shard" style="--sw:19px;--sh:25px;--sx:62px;--sy:24px;--sr:-14deg;--sr2:46deg;top:50%;right:-4%"></span>
+          <span class="shard" style="--sw:11px;--sh:15px;--sx:2px;--sy:48px;--sr:0deg;--sr2:20deg;top:56%;left:47%"></span>
+          <span class="shard" style="--sw:13px;--sh:17px;--sx:-36px;--sy:76px;--sr:30deg;--sr2:72deg;bottom:10%;left:9%"></span>
+          <span class="shard" style="--sw:16px;--sh:21px;--sx:44px;--sy:72px;--sr:-22deg;--sr2:-56deg;bottom:9%;right:7%"></span>
+          <span class="shard" style="--sw:9px;--sh:12px;--sx:6px;--sy:88px;--sr:12deg;--sr2:34deg;bottom:3%;left:46%"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-cue" id="scrollCue"><span class="chev"></span>Deslizá para ver la falla</div>
+
+    <div class="act2" id="act2">
+      <span class="eyebrow lime">Plot twist</span>
+      <h2>Esperá. Esto no era sobre un iPhone.</h2>
+      <p>Soy Luciano Recchini — Frontend Developer (React) &amp; UX/UI Designer. Lo que sigue es mi currículum, armado como el desmontaje de un producto: cada sección es una pieza, y encastran todas.</p>
+      <span class="status-pill"><span class="dot2"></span>Disponible para nuevos desafíos</span>
+      <div class="next-cue">Reporte completo ↓</div>
+    </div>
+
+  </div>
+</section>
+
+<main>
+  <div class="container">
+
+    <section id="ficha">
+      <div class="avatar-mark">
+        <svg viewBox="0 0 64 64" fill="none" stroke="var(--lime)" stroke-width="1.6">
+          <circle cx="32" cy="32" r="30" stroke="var(--line-2)"/>
+          <circle cx="32" cy="25" r="10"/>
+          <path d="M14 54c2-11 10-17 18-17s16 6 18 17"/>
+        </svg>
+        <div>
+          <div class="name">Luciano Recchini</div>
+          <div class="role">Unidad bajo análisis · Frontend Developer (React) &amp; UX/UI Designer</div>
+        </div>
+      </div>
+
+      <div class="sec-head">
+        <span class="eyebrow">01 · Ficha técnica</span>
+      </div>
+
+      <dl class="spec-sheet">
+        <div class="spec-row"><dt>Rol</dt><dd>Frontend Developer (React) &amp; UX/UI Designer</dd></div>
+        <div class="spec-row"><dt>Ubicación</dt><dd>Buenos Aires, Argentina — remoto friendly</dd></div>
+        <div class="spec-row"><dt>Experiencia</dt><dd>+7 años en Frontend &amp; UX, en productos de alto tráfico</dd></div>
+        <div class="spec-row"><dt>Disponibilidad</dt><dd>Inmediata</dd></div>
+        <div class="spec-row"><dt>Stack principal</dt><dd>React · Next.js · TypeScript · Figma · Design Systems</dd></div>
+      </dl>
+    </section>
+
+    <section id="componentes">
+      <div class="sec-head">
+        <span class="eyebrow">02 · Historial de versiones</span>
+        <h2>Experiencia profesional, línea de tiempo completa</h2>
+      </div>
+
+      <div class="timeline">
+
+        <div class="component">
+          <div class="num"><span>01</span></div>
+          <div>
+            <h3>Luciano Recchini Studio — Product Designer &amp; Frontend Developer</h3>
+            <div class="meta">ENE 2025 → ACTUALIDAD · FREELANCE / CONSULTORÍA INDEPENDIENTE</div>
+            <p>Etapa independiente en la que combino consultoría de producto para empresas con el diseño, desarrollo y puesta en producción de productos digitales completos para clientes y emprendedores: UX/UI, frontend, backend serverless e IA.</p>
+
+            <div class="subentries">
+              <div class="slabel">↳ Proyectos independientes para empresas, dentro de esta etapa</div>
+
+              <div class="subentry">
+                <div class="shd"><span class="srole">Diseñador UI / Analista Funcional</span><span class="scompany">Raona</span><span class="sdate">SEP → DIC 2025</span></div>
+                <p>Consultoría dentro del ecosistema Microsoft: diseño y optimización de aplicaciones empresariales, con implementación en Power Apps y automatización de procesos en Power Automate.</p>
+                <div class="tags"><span class="tag">Figma</span><span class="tag">Power Apps</span><span class="tag">Power Automate</span><span class="tag">Design Systems</span></div>
+              </div>
+
+              <div class="subentry">
+                <div class="shd"><span class="srole">Product Designer (UX/UI)</span><span class="scompany">Clarín</span><span class="sdate">ENE → MAY 2025</span></div>
+                <p>Mejora de la experiencia de usuario en plataformas digitales de alto tráfico: user flows, Information Architecture y optimización basada en métricas y comportamiento de usuarios.</p>
+                <div class="tags"><span class="tag">Figma</span><span class="tag">UX Research</span><span class="tag">Information Architecture</span><span class="tag">AI Tools</span></div>
+              </div>
+            </div>
+
+            <p class="see-more">Los productos propios de esta etapa (Brasa, Catálogo Essen, MARÈA y el resto) están en <a href="#modulos">03 · Módulos instalados</a>.</p>
+          </div>
+        </div>
+
+        <div class="component">
+          <div class="num"><span>02</span></div>
+          <div>
+            <h3>Nonconformist — Lead UX/UI Designer</h3>
+            <div class="meta">NOV 2023 → NOV 2024 · AGENCIA DE PRODUCTO Y TRANSFORMACIÓN DIGITAL</div>
+            <p>Lideré iniciativas de diseño de producto para clientes corporativos, combinando UX/UI, estrategia y ejecución junto a equipos multidisciplinarios. Productos financieros para clientes como Banco Macro.</p>
+            <div class="tags"><span class="tag">Product Design</span><span class="tag">Design Systems</span><span class="tag">Fintech</span><span class="tag">Stakeholder Mgmt</span></div>
+          </div>
+        </div>
+
+        <div class="component">
+          <div class="num"><span>03</span></div>
+          <div>
+            <h3>MindShore — UX Design Specialist</h3>
+            <div class="meta">2023 → 2024 · CONSULTORÍA UX/UI</div>
+            <p>Consultoría UX/UI para mejorar productos digitales existentes: diagnóstico de usabilidad, rediseño de experiencias y alineación con objetivos de negocio.</p>
+            <div class="tags"><span class="tag">Figma</span><span class="tag">React</span><span class="tag">Angular</span><span class="tag">Next.js</span></div>
+          </div>
+        </div>
+
+        <div class="component">
+          <div class="num"><span>04</span></div>
+          <div>
+            <h3>Flybondi — UI Designer (UX/UI)</h3>
+            <div class="meta">2021 → 2023 · AEROLÍNEA LOW COST</div>
+            <p>Creación y evolución del Design System de la compañía basado en Atomic Design, con Design Tokens y componentes documentados en Storybook.</p>
+            <div class="tags"><span class="tag">Design System</span><span class="tag">Atomic Design</span><span class="tag">Storybook</span><span class="tag">React</span></div>
+          </div>
+        </div>
+
+        <div class="component">
+          <div class="num"><span>05</span></div>
+          <div>
+            <h3>Global Hitss · Claro Video — Frontend Developer &amp; UX/UI Designer</h3>
+            <div class="meta">2019 → 2021 · PLATAFORMA DE STREAMING</div>
+            <p>Desarrollo frontend con React y diseño UX/UI para Web, Smart TV, Roku y consolas, en equipo internacional bajo metodologías ágiles.</p>
+            <div class="tags"><span class="tag">React</span><span class="tag">JavaScript</span><span class="tag">Smart TV</span><span class="tag">Multiplatform</span></div>
+          </div>
+        </div>
+
+        <div class="component">
+          <div class="num"><span>06</span></div>
+          <div>
+            <h3>Grupo Cutrounos — Frontend Developer &amp; UI Designer Ssr.</h3>
+            <div class="meta">2016 → 2019</div>
+            <p><b>Ideame</b> (crowdfunding): desarrollo frontend en Angular y diseño web en Sketch. <b>Upate</b> (turismo): lideré la nueva área de UX/UI, creando desde cero la identidad y los componentes del sitio con React + Storybook.</p>
+            <div class="tags"><span class="tag">Angular</span><span class="tag">React</span><span class="tag">Storybook</span><span class="tag">Liderazgo UX/UI</span></div>
+          </div>
+        </div>
+
+        <div class="component">
+          <div class="num"><span>07</span></div>
+          <div>
+            <h3>Grupo Argentina Web — Maquetador Web &amp; Diseñador</h3>
+            <div class="meta">2012 → 2015</div>
+            <p>Maquetado HTML/CSS, desarrollo en PHP, diseño gráfico y web, y mantenimiento de sitios en WordPress y otras plataformas.</p>
+            <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">PHP</span><span class="tag">WordPress</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="modulos">
+      <div class="sec-head">
+        <span class="eyebrow">03 · Módulos instalados — build 2026</span>
+        <h2>Productos propios, hechos con IA como acelerador</h2>
+      </div>
+      <div class="modules">
+        <div class="module">
+          <div class="mtitle"><span class="fw">STREAMING</span>Brasa</div>
+          <p>Plataforma que unifica Netflix y YouTube en una sola experiencia de streaming.</p>
+          <div class="tags"><span class="tag">Next.js</span><span class="tag">Vercel</span></div>
+        </div>
+        <div class="module">
+          <div class="mtitle"><span class="fw">E-COMMERCE</span>Catálogo Essen</div>
+          <p>PWA de ventas para emprendedoras, con panel admin y códigos de referido propios.</p>
+          <div class="tags"><span class="tag">PWA</span><span class="tag">Supabase</span></div>
+        </div>
+        <div class="module">
+          <div class="mtitle"><span class="fw">BIENESTAR</span>MARÈA</div>
+          <p>PWA por invitación con reserva de servicios por videollamada y panel de ventas.</p>
+          <div class="tags"><span class="tag">PWA</span><span class="tag">Supabase</span></div>
+        </div>
+        <div class="module">
+          <div class="mtitle"><span class="fw">ASISTENTES</span>Bot de WhatsApp con IA</div>
+          <p>Asistente conversacional sobre WhatsApp, corriendo 100% en herramientas gratuitas.</p>
+          <div class="tags"><span class="tag">Node.js</span><span class="tag">AI SDK</span></div>
+        </div>
+        <div class="module">
+          <div class="mtitle"><span class="fw">GAMING</span>Asfalto Oeste</div>
+          <p>Juego de carreras para mobile, con motor 3D corriendo en el navegador.</p>
+          <div class="tags"><span class="tag">Three.js</span><span class="tag">TypeScript</span></div>
+        </div>
+        <div class="module">
+          <div class="mtitle"><span class="fw">GESTIÓN</span>App de Auditorías</div>
+          <p>Alta y asignación de auditores por local para una red de franquicias gastronómicas.</p>
+          <div class="tags"><span class="tag">Next.js</span><span class="tag">Vercel</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="compatibilidad">
+      <div class="sec-head">
+        <span class="eyebrow">04 · Compatibilidad</span>
+        <h2>Stack &amp; herramientas</h2>
+      </div>
+      <div class="compat">
+        <div class="compat-group">
+          <span class="glabel">Frontend</span>
+          <div class="chip-row">
+            <span class="chip">React</span><span class="chip">Next.js</span><span class="chip">TypeScript</span><span class="chip">JavaScript (ES6+)</span><span class="chip">React Native</span><span class="chip">Flutter</span><span class="chip">HTML5 / CSS3</span><span class="chip">Tailwind CSS</span><span class="chip">Node.js</span><span class="chip">Vercel</span><span class="chip">Supabase</span>
+          </div>
+        </div>
+        <div class="compat-group">
+          <span class="glabel">UX/UI &amp; Design Systems</span>
+          <div class="chip-row">
+            <span class="chip">Figma</span><span class="chip">Design Systems</span><span class="chip">Design Tokens</span><span class="chip">Atomic Design</span><span class="chip">Storybook</span><span class="chip">User Flows</span><span class="chip">Prototyping</span><span class="chip">Mobile-First</span>
+          </div>
+        </div>
+        <div class="compat-group">
+          <span class="glabel">Herramientas &amp; IA</span>
+          <div class="chip-row">
+            <span class="chip">Cursor</span><span class="chip">Claude</span><span class="chip">ChatGPT</span><span class="chip">Figma AI</span><span class="chip">Prompt Engineering</span><span class="chip">Agile / Scrum</span><span class="chip">Jira / Trello</span><span class="chip">Notion</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="garantia">
+      <div class="warranty">
+        <span class="eyebrow lime" style="margin-bottom:10px;">05 · Garantía y disponibilidad</span>
+        <h2>Garantía: indefinida. Devoluciones: no aceptamos, pero sí feedback.</h2>
+        <p>Unidad probada en producción por +5 años. Sin defectos de fábrica conocidos. Totalmente compatible con equipos ágiles, deadlines ajustados y brainstorms a las 9am. Busco activamente mi próximo desafío como Frontend Developer o Product Designer.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="https://wa.me/5491157935007" target="_blank" rel="noopener">Escribime por WhatsApp</a>
+          <a class="btn ghost" href="https://linkedin.com/in/lucianorecchini" target="_blank" rel="noopener">Ver LinkedIn</a>
+          <a class="btn ghost" href="https://reqini.github.io/lucianorecchini-portfolio/" target="_blank" rel="noopener">Portfolio completo →</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>Documento no oficial. Ningún iPhone fue dañado en la producción de este sitio.</p>
+      <p>Diseñado, escrito y programado por Luciano Recchini — con IA como herramienta, no como excusa. © 2026</p>
+    </footer>
+  </div>
+</main>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var sticky = document.getElementById('stageSticky');
+  var tilt = document.getElementById('phoneTilt');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  function clamp01(v){ return Math.min(1, Math.max(0, v)); }
+  function remap(v, inMin, inMax, outMin, outMax){
+    var t = clamp01((v - inMin) / (inMax - inMin));
+    return outMin + t * (outMax - outMin);
+  }
+
+  function onScroll(){
+    var rect = stage.getBoundingClientRect();
+    var total = stage.offsetHeight - window.innerHeight;
+    var progress = total > 0 ? clamp01(-rect.top / total) : 0;
+
+    var split  = remap(progress, 0.05, 0.55, 0, 1);
+    var reveal = remap(progress, 0.45, 0.95, 0, 1);
+    var act1   = 1 - remap(progress, 0.0, 0.22, 0, 1);
+    var cue    = 1 - remap(progress, 0.0, 0.06, 0, 1);
+
+    var shatterIn  = remap(progress, 0.0, 0.12, 0, 1);
+    var shatterOut = remap(progress, 0.3, 0.55, 0, 1);
+    var shatterOpacity = (0.6 + shatterIn * 0.4) * (1 - shatterOut);
+
+    var impactIn  = remap(progress, 0.02, 0.09, 0, 1);
+    var impactOut = remap(progress, 0.09, 0.22, 0, 1);
+    var impact = impactIn * (1 - impactOut);
+    var shakeX = reduced ? 0 : (Math.sin(progress * 260) * impact * 3.2);
+    var shakeY = reduced ? 0 : (Math.cos(progress * 230) * impact * 2.2);
+
+    sticky.style.setProperty('--split', split);
+    sticky.style.setProperty('--reveal', reveal);
+    sticky.style.setProperty('--act1', act1);
+    sticky.style.setProperty('--cue', cue);
+    sticky.style.setProperty('--shatterOpacity', shatterOpacity.toFixed(3));
+    sticky.style.setProperty('--flash', impact.toFixed(3));
+    sticky.style.setProperty('--shakeX', shakeX.toFixed(2) + 'px');
+    sticky.style.setProperty('--shakeY', shakeY.toFixed(2) + 'px');
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+
+  if (fine && !reduced) {
+    document.getElementById('phoneScene').addEventListener('mousemove', function(e){
+      var r = this.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5;
+      var y = (e.clientY - r.top) / r.height - 0.5;
+      tilt.style.setProperty('--tilt-x', (x * 22).toFixed(2) + 'deg');
+      tilt.style.setProperty('--tilt-y', (y * -12).toFixed(2) + 'deg');
+    });
+    document.getElementById('phoneScene').addEventListener('mouseleave', function(){
+      tilt.style.setProperty('--tilt-x', '0deg');
+      tilt.style.setProperty('--tilt-y', '0deg');
+    });
+  }
+})();
+</script>
