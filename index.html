@@ -34,14 +34,13 @@
   }
 
   *,*::before,*::after{ box-sizing:border-box; }
-  html{ scroll-behavior:smooth; }
+  html{ scroll-behavior:smooth; overflow-x:hidden; }
   body{
     background:var(--bg);
     color:var(--text);
     font-family:var(--font-body);
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
   }
   img{ max-width:100%; display:block; }
   a{ color:inherit; }
