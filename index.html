@@ -71,9 +71,10 @@
 
   /* ============ EYEBROW / LABELS ============ */
   .eyebrow{
-    font-family:var(--font-mono);
-    font-size:.72rem;
-    letter-spacing:.14em;
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:.78rem;
+    letter-spacing:.08em;
     text-transform:uppercase;
     color:var(--text-muted);
     display:inline-flex; align-items:center; gap:8px;
@@ -96,9 +97,7 @@
   .stage-sticky::before{
     content:'';
     position:absolute; inset:0;
-    background:
-      radial-gradient(ellipse 60% 40% at 50% 18%, var(--terracotta-dim), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 50% 88%, var(--lime-dim), transparent 60%);
+    background:var(--bg-2);
     pointer-events:none;
   }
 
@@ -303,8 +302,9 @@
 
   /* --- 01 spec sheet --- */
   .spec-sheet{
-    border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    border:1px solid var(--line); border-radius:16px; overflow:hidden;
     background:var(--surface);
+    box-shadow:0 1px 2px rgba(34,26,16,.04), 0 12px 28px -16px rgba(34,26,16,.14);
   }
   .spec-row{
     display:grid; grid-template-columns:180px 1fr; gap:16px;
@@ -340,8 +340,8 @@
   .component p{ color:var(--text-muted); font-size:.92rem; margin-top:8px; max-width:56ch; }
   .tags{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
   .tag{
-    font-family:var(--font-mono); font-size:.68rem; letter-spacing:.03em;
-    padding:4px 9px; border-radius:6px; border:1px solid var(--line-2); color:var(--text-muted);
+    font-family:var(--font-mono); font-size:.68rem; letter-spacing:.02em;
+    padding:5px 10px; border-radius:7px; background:var(--surface-2); color:var(--text-muted);
   }
 
   .timeline{ position:relative; }
@@ -372,7 +372,8 @@
   /* --- 03 modules grid --- */
   .modules{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
   .module{
-    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px;
+    box-shadow:0 1px 2px rgba(34,26,16,.03), 0 10px 24px -16px rgba(34,26,16,.14);
     display:flex; flex-direction:column; gap:8px;
   }
   .module .mtitle{ font-weight:600; font-size:.96rem; }
@@ -391,8 +392,9 @@
 
   /* --- 05 warranty / contact --- */
   .warranty{
-    background:linear-gradient(165deg,var(--surface),var(--bg-2));
-    border:1px solid var(--line); border-radius:18px; padding:40px 32px;
+    background:var(--surface);
+    border:1px solid var(--line); border-radius:20px; padding:40px 32px;
+    box-shadow:0 1px 2px rgba(34,26,16,.04), 0 16px 36px -18px rgba(34,26,16,.16);
     text-align:center;
   }
   .warranty h2{ font-size:clamp(1.5rem,3.6vw,2.1rem); margin-bottom:12px; }
